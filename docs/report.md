@@ -118,7 +118,7 @@ Notes:
 - A User can have multiple Education, Skill, Interest, and Award records. A Faculty User can create multiple Events; each Event has one owning User.
 - Each Networking Request has one sender and one recipient, both of whom are Users. Users can send and receive multiple requests.
 - Networking Request status values: `pending`, `accepted`, `rejected`. Accepting updates the existing request into a connection. A repeated request in either direction is not allowed. Incoming requests appear in My Network for acceptance or rejection; accepted requests appear as connections.
-- Event fields now include type, draft state, start/end datetimes, venue type, meeting link, and capacity. Runtime status is derived from the schedule; `tentative` and `cancelled` remain explicit event states.
+- Event fields now include type, draft state, start/end datetimes, venue type, meeting link, and capacity. Event status is an explicit faculty choice (`upcoming`, `tentative`, or `cancelled`) and is shown exactly as selected. A faculty owner can also delete their own events from My Events.
 
 ## Wireframes
 
@@ -168,6 +168,7 @@ One named workflow at a time. Include verify notes and polish / model revisions 
 - **Send Connection Request:** The Network area is divided into Global Network for discovering members and My Network for accepted connections plus incoming and outgoing requests. Connect uses a confirmation modal from both the directory and profile. Duplicate requests in either direction are blocked. The student verified sending and handling requests in the running app; the full test suite passed (6 tests).
 - **Edit Profile:** Student wireframe added at `docs/wireframes/w4.png`. Profile edits exclude password and role; registration and profile editing include first and last name. The student confirmed the completed workflow was verified locally.
 - **Event Creation and Management:** Implemented faculty event creation and editing, including draft handling, scheduling, venue, and capacity. The student confirmed the completed workflow was verified locally.
+- **Event status and deletion (polish):** Added an explicit `upcoming` status option alongside `tentative` and `cancelled`; the selected status is now stored and displayed as-is instead of being overwritten by schedule-based derivation. Added a Delete action with confirmation on My Events, scoped to the owning faculty user (`EventService.delete_event` checks ownership). Covered by a new regression test; full suite passed (20 tests).
 - **Phase 5 completion:** The student confirmed that all four named workflows are completed and verified locally.
 - **Demo data (seed polish):** Seed now keeps `bob` as Alumni and updates the existing `admin` record to Faculty (no duplicate account), adds three fictional Alumni (`alice`, `marcus`, `priya`) and one fictional Faculty (`drstewart`) with education, skills, interests, and awards, three sample events of different types (Social, Mentorship, Reunion) owned by the Faculty account, and two connection requests (one accepted, one pending from `alice` to `bob`). Seeding is idempotent and reuses the existing repositories; running `python manage.py init` again creates no duplicates.
 

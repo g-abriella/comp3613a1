@@ -36,8 +36,9 @@
           <div class="col-md-6">
             <label class="form-label" for="status">Event status</label>
             <select class="form-select" id="status" name="status">
-              <option value="tentative" {% if event and event.status == 'tentative' %}selected{% elif not event %}selected{% endif %}>Tentative</option>
-              <option value="cancelled" {% if event and event.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+              {% for option in statuses %}
+              <option value="{{ option }}" {% if event and event.status == option %}selected{% elif not event and option == 'upcoming' %}selected{% endif %}>{{ option|capitalize }}</option>
+              {% endfor %}
             </select>
           </div>
 

@@ -368,3 +368,62 @@ def test_event_service_handles_drafts_and_auto_status():
         assert completed == "completed"
 
     drop_all()
+
+
+def test_event_status_choices_are_preserved_and_events_can_be_deleted():
+    drop_all()
+    ensure_db_and_tables()
+
+    with Session(engine) as db:
+        repo = UserRepository(db)
+        owner = repo.create(FacultyCreate(
+            username="statusfaculty",
+            email="statusfaculty@example.com",
+            password="secret",
+            role="faculty",
+        ))
+        other = repo.create(FacultyCreate(
+            username="otherfaculty",
+            email="otherfaculty@example.com",
+            password="secret",
+            role="faculty",
+        ))
+        service = EventService(db)
+
+        tentative = service.create_event(
+            faculty_user_id=owner.id,
+            title="Tentative Meetup",
+            description="Still being planned",
+            start_datetime="2026-11-15T18:00",
+            end_datetime="2026-11-15T20:00",
+            status="tentative",
+        )
+        assert tentative.status == "tentative"
+
+        upcoming = service.create_event(
+            faculty_user_id=owner.id,
+            title="Upcoming Meetup",
+            description="Confirmed",
+            start_datetime="2026-11-16T18:00",
+            end_datetime="2026-11-16T20:00",
+            status="upcoming",
+        )
+        assert upcoming.status == "upcoming"
+
+        cancelled = service.create_event(
+            faculty_user_id=owner.id,
+            title="Cancelled Meetup",
+            description="No longer running",
+            start_datetime="2026-11-17T18:00",
+            end_datetime="2026-11-17T20:00",
+            status="cancelled",
+        )
+        assert cancelled.status == "cancelled"
+
+        assert service.delete_event(tentative.id, other.id) is False
+        assert service.get_event_by_id(tentative.id) is not None
+
+        assert service.delete_event(tentative.id, owner.id) is True
+        assert service.get_event_by_id(tentative.id) is None
+
+    drop_all()

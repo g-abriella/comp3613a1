@@ -6,7 +6,7 @@ class EventBase(SQLModel):
     title: str = Field(nullable=False)
     description: str = Field(default="")
     event_type: str = Field(default="Social")
-    status: str = Field(default="tentative")
+    status: str = Field(default="upcoming")
     is_draft: bool = Field(default=False)
     start_datetime: datetime | None = None
     end_datetime: datetime | None = None

@@ -17,6 +17,7 @@ class EventService:
         "Other",
     ]
     VENUE_TYPES = ["in-person", "virtual", "hybrid"]
+    STATUSES = ["upcoming", "tentative", "cancelled"]
 
     def __init__(self, db: Session):
         self.repo = EventRepository(db)
@@ -49,19 +50,17 @@ class EventService:
         raise ValueError(f"Unsupported datetime value: {value}")
 
     @staticmethod
-    def compute_event_status(start_datetime, end_datetime, fallback_status="upcoming"):
-        status_value = str(fallback_status or "upcoming").strip().lower()
-        if status_value == "cancelled":
-            return "cancelled"
-        if status_value == "draft":
-            return "draft"
+    def compute_event_status(start_datetime, end_datetime, fallback_status=None):
+        status_value = str(fallback_status).strip().lower() if fallback_status is not None else ""
+        if status_value in EventService.STATUSES or status_value == "draft":
+            return status_value
 
         start = EventService.parse_datetime(start_datetime)
         end = EventService.parse_datetime(end_datetime)
         now = datetime.now(timezone.utc).replace(tzinfo=None)
 
         if start is None or end is None:
-            return status_value if status_value in {"tentative", "upcoming", "in progress", "completed"} else "upcoming"
+            return "upcoming"
 
         if end < now:
             return "completed"
@@ -77,7 +76,7 @@ class EventService:
         event_date: str | date_cls | None = None,
         event_time: str | None = None,
         location: str = "",
-        status: str = "tentative",
+        status: str = "upcoming",
         event_type: str = "Social",
         start_datetime: str | datetime | None = None,
         end_datetime: str | datetime | None = None,
@@ -140,7 +139,7 @@ class EventService:
         title: str,
         description: str,
         event_type: str = "Social",
-        status: str = "tentative",
+        status: str = "upcoming",
         start_datetime: str | datetime | None = None,
         end_datetime: str | datetime | None = None,
         venue_type: str = "in-person",
@@ -222,6 +221,13 @@ class EventService:
 
     def get_events_for_user(self, user_id: int):
         return self.repo.get_by_user(user_id)
+
+    def delete_event(self, event_id: int, faculty_user_id: int) -> bool:
+        event = self.repo.get_by_id(event_id)
+        if event is None or event.faculty_user_id != faculty_user_id:
+            return False
+        self.repo.delete(event)
+        return True
 
     @staticmethod
     def normalize_status(value):

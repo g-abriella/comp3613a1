@@ -31,3 +31,7 @@ class EventRepository:
 
     def get_by_id(self, event_id: int) -> Optional[Event]:
         return self.db.get(Event, event_id)
+
+    def delete(self, event: Event) -> None:
+        self.db.delete(event)
+        self.db.commit()

@@ -54,6 +54,7 @@ async def event_new_view(request: Request, user: FacultyDep, db: SessionDep):
             "user": user,
             "event_types": EventService.EVENT_TYPES,
             "venue_types": EventService.VENUE_TYPES,
+            "statuses": EventService.STATUSES,
             "event": None,
         },
     )
@@ -72,6 +73,7 @@ async def event_edit_view(request: Request, event_id: int, user: FacultyDep, db:
             "user": user,
             "event_types": EventService.EVENT_TYPES,
             "venue_types": EventService.VENUE_TYPES,
+            "statuses": EventService.STATUSES,
             "event": event,
         },
     )
@@ -85,7 +87,7 @@ async def event_create_action(
     title: str = Form(...),
     description: str = Form(""),
     event_type: str = Form("Social"),
-    event_status: str = Form("tentative"),
+    event_status: str = Form("upcoming"),
     start_datetime: str = Form(""),
     end_datetime: str = Form(""),
     venue_type: str = Form("in-person"),
@@ -139,7 +141,7 @@ async def event_edit_action(
     title: str = Form(...),
     description: str = Form(""),
     event_type: str = Form("Social"),
-    event_status: str = Form("tentative"),
+    event_status: str = Form("upcoming"),
     start_datetime: str = Form(""),
     end_datetime: str = Form(""),
     venue_type: str = Form("in-person"),
@@ -184,4 +186,14 @@ async def event_edit_action(
         flash(request, str(exc), "danger")
         return RedirectResponse(url=request.url_for("event_edit_view", event_id=event_id), status_code=status.HTTP_303_SEE_OTHER)
 
+    return RedirectResponse(url=request.url_for("my_events_view"), status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/events/{event_id}/delete", response_class=HTMLResponse, name="event_delete_action")
+async def event_delete_action(request: Request, event_id: int, db: SessionDep, user: FacultyDep):
+    service = EventService(db)
+    if service.delete_event(event_id, user.id):
+        flash(request, "Event deleted.", "success")
+    else:
+        flash(request, "Event not found or you do not have permission to delete it.", "danger")
     return RedirectResponse(url=request.url_for("my_events_view"), status_code=status.HTTP_303_SEE_OTHER)
