@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi import status
 from app.dependencies.session import SessionDep
 from app.dependencies.auth import AuthDep, IsUserLoggedIn, get_current_user, is_admin
+from app.services.event_service import EventService
 from . import router, templates
 
 
@@ -12,10 +13,12 @@ async def user_home_view(
     user: AuthDep,
     db:SessionDep
 ):
+    upcoming_events = EventService(db).get_upcoming_events(limit=3)
     return templates.TemplateResponse(
         request=request, 
         name="app.html",
         context={
-            "user": user
+            "user": user,
+            "upcoming_events": upcoming_events,
         }
     )

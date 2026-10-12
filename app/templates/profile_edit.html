@@ -1,0 +1,284 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Edit profile{% endblock %}
+
+{% block additional_styles %}
+<style>
+  .dynamic-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .entry-row,
+  .entry-card {
+    border: 1px solid rgba(16, 47, 74, 0.12);
+    border-radius: 0.75rem;
+    padding: 0.85rem;
+    background: #f8fafc;
+  }
+
+  .entry-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .entry-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .entry-row .form-control {
+    flex: 1;
+  }
+
+  .entry-card .row {
+    margin: 0;
+  }
+
+  .remove-entry {
+    white-space: nowrap;
+  }
+</style>
+{% endblock %}
+
+{% block subpage_content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h1 class="h3 mb-1">Edit profile</h1>
+      <p class="text-muted mb-0">Update your public profile information.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('profile_view', user_id=user.id) }}">Back to profile</a>
+  </div>
+
+  <form method="post" action="{{ url_for('profile_edit_action') }}">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label" for="first_name">First name</label>
+            <input class="form-control" type="text" id="first_name" name="first_name" value="{{ profile.user.first_name or '' }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="last_name">Last name</label>
+            <input class="form-control" type="text" id="last_name" name="last_name" value="{{ profile.user.last_name or '' }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="username">Username</label>
+            <input class="form-control" type="text" id="username" name="username" value="{{ profile.user.username }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-control" type="email" id="email" name="email" value="{{ profile.user.email }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="telephone">Telephone</label>
+            <input class="form-control" type="tel" id="telephone" name="telephone" value="{{ profile.user.telephone or '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="location">Location</label>
+            <input class="form-control" type="text" id="location" name="location" value="{{ profile.user.location or '' }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="profile_picture">Profile picture URL</label>
+            <input class="form-control" type="url" id="profile_picture" name="profile_picture" value="{{ profile.user.profile_picture or '' }}">
+          </div>
+        </div>
+
+        {% if profile.user.role == 'alumni' %}
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label" for="job_title">Job title</label>
+            <input class="form-control" type="text" id="job_title" name="job_title" value="{{ profile.details.job_title if profile.details else '' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="programme">Programme</label>
+            <input class="form-control" type="text" id="programme" name="programme" value="{{ profile.details.programme if profile.details else '' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="graduation_year">Graduation year</label>
+            <input class="form-control" type="number" id="graduation_year" name="graduation_year" value="{{ profile.details.graduation_year if profile.details else '' }}">
+          </div>
+        </div>
+        {% elif profile.user.role == 'faculty' %}
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label" for="job_title">Job title</label>
+            <input class="form-control" type="text" id="job_title" name="job_title" value="{{ profile.details.job_title if profile.details else '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="department">Department</label>
+            <input class="form-control" type="text" id="department" name="department" value="{{ profile.details.department if profile.details else '' }}">
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="row g-4 mb-2">
+          <div class="col-md-6">
+            <label class="form-label">Skills</label>
+            <div class="dynamic-list" id="skills-list">
+              {% for skill in profile.skills %}
+              <div class="entry-row">
+                <input class="form-control" type="text" name="skills" value="{{ skill.skill_name }}" aria-label="Skill">
+                <button class="btn btn-outline-danger btn-sm remove-entry" type="button">Delete</button>
+              </div>
+              {% endfor %}
+              {% if not profile.skills %}
+              <div class="entry-row">
+                <input class="form-control" type="text" name="skills" placeholder="Add a skill" aria-label="Skill">
+                <button class="btn btn-outline-danger btn-sm remove-entry" type="button">Delete</button>
+              </div>
+              {% endif %}
+            </div>
+            <button class="btn btn-outline-primary btn-sm mt-2 add-entry" type="button" data-list="skills-list" data-kind="skill">+ Add skill</button>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Interests</label>
+            <div class="dynamic-list" id="interests-list">
+              {% for interest in profile.interests %}
+              <div class="entry-row">
+                <input class="form-control" type="text" name="interests" value="{{ interest.interest_name }}" aria-label="Interest">
+                <button class="btn btn-outline-danger btn-sm remove-entry" type="button">Delete</button>
+              </div>
+              {% endfor %}
+              {% if not profile.interests %}
+              <div class="entry-row">
+                <input class="form-control" type="text" name="interests" placeholder="Add an interest" aria-label="Interest">
+                <button class="btn btn-outline-danger btn-sm remove-entry" type="button">Delete</button>
+              </div>
+              {% endif %}
+            </div>
+            <button class="btn btn-outline-primary btn-sm mt-2 add-entry" type="button" data-list="interests-list" data-kind="interest">+ Add interest</button>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-6">
+            <label class="form-label">Education</label>
+            <div class="dynamic-list" id="education-list">
+              {% for item in profile.education %}
+              <div class="entry-card">
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <input class="form-control" type="text" name="education_institution_name" value="{{ item.institution_name }}" placeholder="Institution name">
+                  </div>
+                  <div class="col-md-6">
+                    <input class="form-control" type="text" name="education_institution_location" value="{{ item.institution_location }}" placeholder="Location">
+                  </div>
+                  <div class="col-md-6">
+                    <input class="form-control" type="text" name="education_degree" value="{{ item.degree }}" placeholder="Degree">
+                  </div>
+                  <div class="col-md-6">
+                    <input class="form-control" type="number" name="education_year_of_completion" value="{{ item.year_of_completion or '' }}" placeholder="Year of completion">
+                  </div>
+                </div>
+                <button class="btn btn-link text-danger remove-entry p-0 align-self-start" type="button">Remove education</button>
+              </div>
+              {% endfor %}
+              {% if not profile.education %}
+              <div class="entry-card">
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <input class="form-control" type="text" name="education_institution_name" placeholder="Institution name">
+                  </div>
+                  <div class="col-md-6">
+                    <input class="form-control" type="text" name="education_institution_location" placeholder="Location">
+                  </div>
+                  <div class="col-md-6">
+                    <input class="form-control" type="text" name="education_degree" placeholder="Degree">
+                  </div>
+                  <div class="col-md-6">
+                    <input class="form-control" type="number" name="education_year_of_completion" placeholder="Year of completion">
+                  </div>
+                </div>
+                <button class="btn btn-link text-danger remove-entry p-0 align-self-start" type="button">Remove education</button>
+              </div>
+              {% endif %}
+            </div>
+            <button class="btn btn-outline-primary btn-sm mt-2 add-entry" type="button" data-list="education-list" data-kind="education">+ Add education</button>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Awards</label>
+            <div class="dynamic-list" id="awards-list">
+              {% for item in profile.awards %}
+              <div class="entry-card">
+                <div class="row g-2">
+                  <div class="col-12">
+                    <input class="form-control" type="text" name="award_title" value="{{ item.award_name }}" placeholder="Award title">
+                  </div>
+                  <div class="col-12">
+                    <textarea class="form-control" name="award_description" rows="3" placeholder="Description">{{ item.award_description }}</textarea>
+                  </div>
+                </div>
+                <button class="btn btn-link text-danger remove-entry p-0 align-self-start" type="button">Remove award</button>
+              </div>
+              {% endfor %}
+              {% if not profile.awards %}
+              <div class="entry-card">
+                <div class="row g-2">
+                  <div class="col-12">
+                    <input class="form-control" type="text" name="award_title" placeholder="Award title">
+                  </div>
+                  <div class="col-12">
+                    <textarea class="form-control" name="award_description" rows="3" placeholder="Description"></textarea>
+                  </div>
+                </div>
+                <button class="btn btn-link text-danger remove-entry p-0 align-self-start" type="button">Remove award</button>
+              </div>
+              {% endif %}
+            </div>
+            <button class="btn btn-outline-primary btn-sm mt-2 add-entry" type="button" data-list="awards-list" data-kind="award">+ Add award</button>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-white d-flex justify-content-end gap-2">
+        <a class="btn btn-outline-secondary" href="{{ url_for('profile_view', user_id=user.id) }}">Cancel</a>
+        <button class="btn btn-primary" type="submit">Save profile</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  const addEntryTemplates = {
+    'skills-list': '<div class="entry-row"><input class="form-control" type="text" name="skills" placeholder="Add a skill" aria-label="Skill"><button class="btn btn-outline-danger btn-sm remove-entry" type="button">Delete</button></div>',
+    'interests-list': '<div class="entry-row"><input class="form-control" type="text" name="interests" placeholder="Add an interest" aria-label="Interest"><button class="btn btn-outline-danger btn-sm remove-entry" type="button">Delete</button></div>',
+    'education-list': '<div class="entry-card"><div class="row g-2"><div class="col-md-6"><input class="form-control" type="text" name="education_institution_name" placeholder="Institution name"></div><div class="col-md-6"><input class="form-control" type="text" name="education_institution_location" placeholder="Location"></div><div class="col-md-6"><input class="form-control" type="text" name="education_degree" placeholder="Degree"></div><div class="col-md-6"><input class="form-control" type="number" name="education_year_of_completion" placeholder="Year of completion"></div></div><button class="btn btn-link text-danger remove-entry p-0 align-self-start" type="button">Remove education</button></div>',
+    'awards-list': '<div class="entry-card"><div class="row g-2"><div class="col-12"><input class="form-control" type="text" name="award_title" placeholder="Award title"></div><div class="col-12"><textarea class="form-control" name="award_description" rows="3" placeholder="Description"></textarea></div></div><button class="btn btn-link text-danger remove-entry p-0 align-self-start" type="button">Remove award</button></div>'
+  };
+
+  document.addEventListener('click', function (event) {
+    const addButton = event.target.closest('.add-entry');
+    if (addButton) {
+      const listId = addButton.dataset.list;
+      const template = addEntryTemplates[listId];
+      if (template) {
+        const list = document.getElementById(listId);
+        if (list) {
+          list.insertAdjacentHTML('beforeend', template);
+        }
+      }
+      return;
+    }
+
+    const removeButton = event.target.closest('.remove-entry');
+    if (removeButton) {
+      const row = removeButton.closest('.entry-row, .entry-card');
+      if (row) {
+        const list = row.parentElement;
+        row.remove();
+        if (list && list.children.length === 0) {
+          const emptyTemplate = addEntryTemplates[list.id];
+          if (emptyTemplate) {
+            list.insertAdjacentHTML('beforeend', emptyTemplate);
+          }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

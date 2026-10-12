@@ -1,0 +1,201 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Create Event{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3">
+  <div class="card shadow-sm border-0 mx-auto" style="max-width: 900px;">
+    <div class="card-body p-4 p-md-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <p class="text-uppercase small text-muted mb-1">Faculty workflow</p>
+          <h1 class="h3 mb-0">Create event</h1>
+        </div>
+        <button class="btn btn-outline-secondary" id="back-navigation" type="button">Back</button>
+      </div>
+
+      <form id="event-form" method="POST" action="{{ url_for('event_edit_action', event_id=event.id) if event else url_for('event_create_action') }}" enctype="multipart/form-data">
+        <div class="row g-4">
+          <div class="col-12">
+            <h2 class="h5 mb-3">Event Details</h2>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label" for="title">Event title</label>
+            <input class="form-control" id="title" name="title" type="text" value="{{ event.title if event else '' }}" required>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="event_type">Event type</label>
+            <select class="form-select" id="event_type" name="event_type">
+              {% for option in event_types %}
+              <option value="{{ option }}" {% if event and event.event_type == option %}selected{% elif not event and option == 'Social' %}selected{% endif %}>{{ option }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="status">Event status</label>
+            <select class="form-select" id="status" name="status">
+              <option value="tentative" {% if event and event.status == 'tentative' %}selected{% elif not event %}selected{% endif %}>Tentative</option>
+              <option value="cancelled" {% if event and event.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label" for="event_logo">Optional event logo</label>
+            <input class="form-control" id="event_logo" name="event_logo" type="file" accept="image/*">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label" for="description">Event description</label>
+            <textarea class="form-control" id="description" name="description" rows="4" required>{{ event.description if event else '' }}</textarea>
+          </div>
+
+          <div class="col-12 mt-4">
+            <h2 class="h5 mb-3">Scheduling</h2>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="start_datetime">Start time</label>
+            <input class="form-control" id="start_datetime" name="start_datetime" type="datetime-local" value="{{ event.start_datetime.strftime('%Y-%m-%dT%H:%M') if event and event.start_datetime else '' }}" required>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="end_datetime">End time</label>
+            <input class="form-control" id="end_datetime" name="end_datetime" type="datetime-local" value="{{ event.end_datetime.strftime('%Y-%m-%dT%H:%M') if event and event.end_datetime else '' }}" required>
+          </div>
+
+          <div class="col-12 mt-4">
+            <h2 class="h5 mb-3">Location</h2>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="venue_type">Venue type</label>
+            <select class="form-select" id="venue_type" name="venue_type">
+              {% for option in venue_types %}
+              <option value="{{ option }}" {% if event and event.venue_type == option %}selected{% elif not event and option == 'in-person' %}selected{% endif %}>{{ option }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="location">Location</label>
+            <input class="form-control" id="location" name="location" type="text" value="{{ event.location if event else '' }}" placeholder="Venue or city" required>
+          </div>
+
+          <div class="col-md-6 meeting-link-field d-none">
+            <label class="form-label" for="meeting_link">Meeting link</label>
+            <input class="form-control" id="meeting_link" name="meeting_link" type="url" value="{{ event.meeting_link if event else '' }}" placeholder="https://example.com/meeting">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="capacity">Capacity</label>
+            <input class="form-control" id="capacity" name="capacity" type="number" min="1" value="{{ event.capacity if event and event.capacity is not none else '' }}" placeholder="Optional">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button class="btn btn-outline-secondary" type="button" id="cancel-submit">Cancel</button>
+          <button class="btn btn-primary" type="submit" id="publish-button">Publish Event</button>
+        </div>
+
+        <input type="hidden" id="save_as_draft" name="save_as_draft" value="false">
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="leaveModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Leave without saving?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Your changes will be lost unless you save them.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" id="save-draft-from-modal">Save as draft</button>
+        <button type="button" class="btn btn-outline-danger" id="discard-changes">Discard changes</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Keep editing</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block subpage_scripts %}
+<script>
+  const form = document.getElementById('event-form');
+  const venueType = document.getElementById('venue_type');
+  const meetingLinkField = document.querySelector('.meeting-link-field');
+  const meetingLinkInput = document.getElementById('meeting_link');
+  const leaveModalEl = document.getElementById('leaveModal');
+  const leaveModal = new bootstrap.Modal(leaveModalEl);
+  const saveDraftInput = document.getElementById('save_as_draft');
+  const originalState = JSON.stringify(Array.from(new FormData(form).entries()));
+
+  function updateMeetingLinkVisibility() {
+    const isVisible = ['virtual', 'hybrid'].includes(venueType.value);
+    meetingLinkField.classList.toggle('d-none', !isVisible);
+    if (!isVisible) {
+      meetingLinkInput.value = '';
+    }
+  }
+
+  function isDirty() {
+    return JSON.stringify(Array.from(new FormData(form).entries())) !== originalState;
+  }
+
+  function saveDraftAction() {
+    saveDraftInput.value = 'true';
+    form.dataset.submitting = 'true';
+    form.requestSubmit();
+  }
+
+  form.addEventListener('submit', function () {
+    form.dataset.submitting = 'true';
+  });
+
+  document.getElementById('cancel-submit').addEventListener('click', function () {
+    if (isDirty()) {
+      leaveModal.show();
+      return;
+    }
+    window.location.href = '{{ url_for("event_list_view") }}';
+  });
+
+  document.getElementById('save-draft-from-modal').addEventListener('click', function () {
+    saveDraftAction();
+    leaveModal.hide();
+  });
+
+  document.getElementById('discard-changes').addEventListener('click', function () {
+    window.location.href = '{{ url_for("event_list_view") }}';
+  });
+
+  document.getElementById('back-navigation').addEventListener('click', function () {
+    if (isDirty()) {
+      leaveModal.show();
+      return;
+    }
+    if (document.referrer) {
+      window.history.back();
+      return;
+    }
+    window.location.href = '{{ url_for("event_list_view") }}';
+  });
+
+  window.addEventListener('beforeunload', function (event) {
+    if (isDirty() && form.dataset.submitting !== 'true') {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  });
+
+  venueType.addEventListener('change', updateMeetingLinkVisibility);
+  updateMeetingLinkVisibility();
+</script>
+{% endblock %}
+

@@ -1,17 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap');
+
 :root {
-  /* Phase 5 theming: Guide overwrites these from docs/report.md preferences */
-  --brand-name: "FastStarter";
-  --brand-bg: #0c1218;
-  --brand-surface: #f7f4ef;
-  --brand-ink: #14202b;
-  --brand-muted: #6a7a88;
-  --brand-accent: #c45c26;
-  --brand-accent-2: #2a6f6b;
-  --brand-sidebar: #14202b;
-  --brand-sidebar-text: #a8b4bf;
-  --brand-font-display: "Fraunces", Georgia, serif;
-  --brand-font-body: "Source Sans 3", "Segoe UI", sans-serif;
-  --brand-radius: 0.85rem;
+  --brand-name: "Nexa";
+  --brand-bg: #F2F2F2;
+  --brand-surface: #FFFFFF;
+  --brand-ink: #344054;
+  --brand-muted: #667085;
+  --brand-accent: #D1AD6B;
+  --brand-accent-2: #102F4A;
+  --brand-sidebar: #102F4A;
+  --brand-sidebar-text: #E5EEF5;
+  --brand-font-display: "Geist", "Segoe UI", sans-serif;
+  --brand-font-body: "Geist", "Segoe UI", sans-serif;
+  --brand-radius: 1rem;
+  --bs-primary: var(--brand-accent-2);
+  --bs-primary-rgb: 16, 47, 74;
+  --bs-link-color: var(--brand-accent-2);
+  --bs-link-color-rgb: 16, 47, 74;
+  --bs-link-hover-color: var(--brand-accent);
+  --bs-link-hover-color-rgb: 209, 173, 107;
+  --bs-focus-ring-color: rgba(209, 173, 107, 0.25);
 }
 
 *,
@@ -27,6 +35,62 @@ body {
   background: var(--brand-bg);
 }
 
+.btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--brand-accent-2);
+  --bs-btn-border-color: var(--brand-accent-2);
+  --bs-btn-hover-color: var(--brand-accent-2);
+  --bs-btn-hover-bg: var(--brand-accent);
+  --bs-btn-hover-border-color: var(--brand-accent);
+  --bs-btn-focus-shadow-rgb: 209, 173, 107;
+  --bs-btn-active-color: var(--brand-accent-2);
+  --bs-btn-active-bg: var(--brand-accent);
+  --bs-btn-active-border-color: var(--brand-accent);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: var(--brand-accent-2);
+  --bs-btn-disabled-border-color: var(--brand-accent-2);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--brand-accent-2);
+  --bs-btn-border-color: var(--brand-accent-2);
+  --bs-btn-hover-color: var(--brand-accent-2);
+  --bs-btn-hover-bg: var(--brand-accent);
+  --bs-btn-hover-border-color: var(--brand-accent);
+  --bs-btn-focus-shadow-rgb: 209, 173, 107;
+  --bs-btn-active-color: var(--brand-accent-2);
+  --bs-btn-active-bg: var(--brand-accent);
+  --bs-btn-active-border-color: var(--brand-accent);
+  --bs-btn-disabled-color: var(--brand-accent-2);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: var(--brand-accent-2);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: var(--brand-accent);
+  box-shadow: 0 0 0 0.25rem rgba(209, 173, 107, 0.25);
+}
+
+.form-check-input:checked {
+  background-color: var(--brand-accent-2);
+  border-color: var(--brand-accent-2);
+}
+
+#appToast,
+.form-control,
+.btn,
+.alert,
+.card,
+.panel,
+.auth-panel,
+.landing-nav,
+.landing-hero,
+.landing-foot {
+  font-family: var(--brand-font-body);
+}
+
 .brand-wordmark {
   font-family: var(--brand-font-display);
   font-weight: 650;
@@ -39,28 +103,14 @@ body {
   display: grid;
   grid-template-rows: auto 1fr auto;
   color: var(--brand-surface);
-  background:
-    linear-gradient(160deg, rgba(12, 18, 24, 0.55), rgba(12, 18, 24, 0.82)),
-    radial-gradient(ellipse 80% 60% at 15% 20%, rgba(42, 111, 107, 0.45), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 90% 80%, rgba(196, 92, 38, 0.28), transparent 50%),
-    linear-gradient(180deg, #1a2834 0%, #0c1218 100%);
+  background-image:
+    linear-gradient(rgba(16, 47, 74, 0.5), rgba(16, 47, 74, 0.5)),
+    url("/static/img/hero_img.jpg");
+  background-position: center, center 55%;
+  background-size: cover, cover;
+  background-repeat: no-repeat;
   position: relative;
   overflow: hidden;
-}
-
-.landing::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    repeating-linear-gradient(
-      -18deg,
-      transparent,
-      transparent 48px,
-      rgba(247, 244, 239, 0.025) 48px,
-      rgba(247, 244, 239, 0.025) 49px
-    );
-  pointer-events: none;
 }
 
 .landing-nav,
@@ -93,15 +143,16 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(2rem, 8vh, 5rem) clamp(1.25rem, 4vw, 3rem) 3rem;
-  max-width: 42rem;
+  width: 60%;
+  margin-inline: auto;
+  padding: clamp(2rem, 8vh, 5rem) 0 3rem;
 }
 
 .landing-kicker {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: color-mix(in srgb, var(--brand-surface) 65%, var(--brand-accent-2));
+  color: rgba(255, 255, 255, 0.82);
   margin: 0 0 1rem;
 }
 
@@ -115,7 +166,7 @@ body {
 .landing-lead {
   font-size: clamp(1.05rem, 2.2vw, 1.25rem);
   line-height: 1.55;
-  color: color-mix(in srgb, var(--brand-surface) 78%, transparent);
+  color: rgba(255, 255, 255, 0.9);
   margin: 0 0 2rem;
   max-width: 28rem;
 }
@@ -144,69 +195,44 @@ body {
 
 .btn-landing-primary {
   background: var(--brand-accent);
-  color: #fff8f3;
+  color: var(--brand-accent-2);
 }
 
 .btn-landing-primary:hover {
   background: color-mix(in srgb, var(--brand-accent) 85%, #000);
-  color: #fff;
+  color: var(--brand-accent-2);
 }
 
 .btn-landing-ghost {
   background: transparent;
   color: var(--brand-surface);
-  border-color: color-mix(in srgb, var(--brand-surface) 45%, transparent);
+  border-color: rgba(255, 255, 255, 0.68);
 }
 
 .btn-landing-ghost:hover {
   border-color: var(--brand-surface);
-  background: color-mix(in srgb, var(--brand-surface) 8%, transparent);
+  background: rgba(255, 255, 255, 0.12);
   color: var(--brand-surface);
 }
 
 .landing-foot {
   padding: 1.25rem clamp(1.25rem, 4vw, 3rem) 1.75rem;
   font-size: 0.85rem;
-  color: color-mix(in srgb, var(--brand-surface) 45%, transparent);
+  color: rgba(255, 255, 255, 0.74);
 }
 
-.landing-orb {
-  position: absolute;
-  width: min(52vw, 420px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  right: -6%;
-  top: 18%;
-  background:
-    radial-gradient(circle at 35% 35%, rgba(247, 244, 239, 0.18), transparent 55%),
-    radial-gradient(circle at 70% 70%, rgba(42, 111, 107, 0.5), transparent 60%),
-    rgba(196, 92, 38, 0.15);
-  filter: blur(2px);
-  animation: landing-drift 14s ease-in-out infinite alternate;
-  pointer-events: none;
-}
+@media (max-width: 767.98px) {
+  .landing {
+    background-position: center, 54% center;
+  }
 
-.landing-orb-2 {
-  width: min(30vw, 220px);
-  left: 8%;
-  right: auto;
-  top: auto;
-  bottom: 12%;
-  opacity: 0.7;
-  animation-duration: 18s;
-  animation-direction: alternate-reverse;
-}
-
-@keyframes landing-drift {
-  from { transform: translate(0, 0) scale(1); }
-  to { transform: translate(-18px, 24px) scale(1.06); }
+  .landing-hero {
+    width: calc(100% - 2.5rem);
+    padding-top: 2rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-orb,
-  .landing-orb-2 {
-    animation: none;
-  }
   .btn-landing:hover {
     transform: none;
   }
@@ -219,10 +245,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background:
-    radial-gradient(ellipse at top left, color-mix(in srgb, var(--brand-accent-2) 35%, transparent), transparent 55%),
-    radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--brand-accent) 28%, transparent), transparent 50%),
-    var(--brand-bg);
+  background: var(--brand-bg);
 }
 
 .auth-panel {
@@ -231,7 +254,8 @@ body {
   color: var(--brand-ink);
   border-radius: var(--brand-radius);
   padding: 2rem 1.75rem;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 16px 42px rgba(16, 47, 74, 0.12);
+  border: 1px solid #D9E4EC;
 }
 
 .auth-panel .brand-wordmark {
@@ -246,11 +270,13 @@ body {
 }
 
 .auth-panel .btn-primary {
+  color: var(--brand-accent-2);
   background: var(--brand-accent);
   border-color: var(--brand-accent);
 }
 
 .auth-panel .btn-primary:hover {
+  color: var(--brand-accent-2);
   background: color-mix(in srgb, var(--brand-accent) 85%, #000);
   border-color: color-mix(in srgb, var(--brand-accent) 85%, #000);
 }

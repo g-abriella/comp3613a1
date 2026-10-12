@@ -1,0 +1,109 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Network{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+    <div>
+      <p class="text-uppercase small text-muted mb-1">Nexa community</p>
+      <h1 class="h3 mb-1">Network</h1>
+      <p class="text-muted mb-0">Find alumni and faculty profiles.</p>
+    </div>
+    <form class="d-flex gap-2" method="get" action="{{ url_for('network_view') }}" role="search">
+      <label class="visually-hidden" for="people-search">Search people</label>
+      <input class="form-control" id="people-search" name="q" type="search" value="{{ query }}" placeholder="Search by username">
+      <button class="btn btn-primary" type="submit">Search</button>
+      {% if query %}
+      <a class="btn btn-outline-secondary" href="{{ url_for('network_view') }}">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <nav class="nav nav-tabs mb-4" aria-label="Network views">
+    <a class="nav-link active" href="{{ url_for('network_view') }}" aria-current="page">Global Network</a>
+    <a class="nav-link" href="{{ url_for('my_network_view') }}">My Network</a>
+  </nav>
+
+  {% if profiles %}
+  <div class="row g-3">
+    {% for profile in profiles %}
+    {% set member = profile.user %}
+    {% set details = profile.details %}
+    <div class="col-12 col-lg-6 col-xxl-4">
+      <article class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex gap-3 align-items-center">
+          {% if member.profile_picture %}
+          <img class="rounded object-fit-cover flex-shrink-0" src="{{ member.profile_picture }}" alt="" width="88" height="88">
+          {% else %}
+          <div class="rounded bg-light d-flex align-items-center justify-content-center flex-shrink-0 text-muted" style="width: 88px; height: 88px;" aria-hidden="true">
+            <span class="material-symbols-outlined fs-1">person</span>
+          </div>
+          {% endif %}
+          <div class="min-w-0 flex-grow-1">
+            <p class="text-uppercase small text-muted mb-1">{{ member.role }}</p>
+            <h2 class="h5 text-break mb-1">{{ member.username }}</h2>
+            <p class="text-muted mb-3">
+              {% if details and details.job_title %}{{ details.job_title }}{% elif details and details.department %}{{ details.department }}{% else %}Nexa member{% endif %}
+              {% if member.location %}<span aria-hidden="true"> · </span>{{ member.location }}{% endif %}
+            </p>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('profile_view', user_id=member.id) }}">View profile</a>
+            {% if profile.connection_state in ['available', 'rejected'] %}
+            <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#connectModal" data-recipient-id="{{ member.id }}" data-recipient-name="{{ member.username }}">Connect</button>
+            {% if profile.connection_state == 'rejected' %}<span class="badge text-bg-light">Previous request rejected</span>{% endif %}
+            {% elif profile.connection_state == 'incoming_pending' %}
+            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('my_network_view') }}">Respond in My Network</a>
+            {% elif profile.connection_state == 'connected' %}
+            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('my_network_view') }}">Connected</a>
+            {% elif profile.connection_state == 'outgoing_pending' %}
+            <span class="badge text-bg-light">Request pending</span>
+            {% else %}
+            <span class="badge text-bg-light">Request rejected</span>
+            {% endif %}
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="border-top py-5 text-center text-muted">
+    {% if query %}No people match “{{ query }}”.{% else %}No alumni or faculty profiles are available yet.{% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<div class="modal fade" id="connectModal" tabindex="-1" aria-labelledby="connectModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('connection_request_action') }}">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="connectModalTitle">Send connection request</h2>
+          <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">Send a connection request to <strong id="connectRecipientName"></strong>?</p>
+          <input type="hidden" name="recipient_id" id="connectRecipientId">
+          <input type="hidden" name="return_to" value="/network{% if query %}?q={{ query|urlencode }}{% endif %}">
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Connect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block subpage_scripts %}
+<script>
+  const connectModal = document.getElementById('connectModal');
+  connectModal.addEventListener('show.bs.modal', function (event) {
+    const trigger = event.relatedTarget;
+    document.getElementById('connectRecipientId').value = trigger.dataset.recipientId;
+    document.getElementById('connectRecipientName').textContent = trigger.dataset.recipientName;
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,279 @@
+{% extends "authenticated-base.html" %}
+{% block title %}{{ profile.user.username }} | Profile{% endblock %}
+
+{% block additional_styles %}
+<style>
+  .profile-shell {
+    padding-top: 0.5rem;
+  }
+
+  .profile-card {
+    border: 1px solid rgba(16, 47, 74, 0.08);
+    border-radius: 1rem;
+    box-shadow: 0 8px 22px rgba(16, 47, 74, 0.06);
+    background: #ffffff;
+    height: 100%;
+  }
+
+  .profile-card .card-body {
+    padding: 1.25rem 1.25rem 1.1rem;
+  }
+
+  .profile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  .profile-meta .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #2b3843;
+  }
+
+  .profile-meta .material-symbols-outlined {
+    color: var(--brand-primary, #102f4a);
+    font-size: 1.1rem;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #62707d;
+    margin-bottom: 0.85rem;
+    font-weight: 700;
+  }
+
+  .profile-name {
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+    color: #102f4a;
+  }
+
+  .profile-username {
+    color: #62707d;
+    margin-bottom: 0;
+  }
+
+  .connection-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid #b7dfca;
+    border-radius: 999px;
+    padding: 0.3rem 0.65rem;
+    color: #17633a;
+    background: #edf8f1;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .profile-list {
+    margin-bottom: 0;
+    padding-left: 1.1rem;
+  }
+
+  .profile-list li + li {
+    margin-top: 0.3rem;
+  }
+</style>
+{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3 profile-shell">
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+    {% if show_back_to_network %}
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('network_view') }}">Back to Global Network</a>
+    {% else %}
+    <div></div>
+    {% endif %}
+    {% if user and user.id == profile.user.id %}
+    <a class="btn btn-primary btn-sm" href="{{ url_for('profile_edit_view') }}">Edit profile</a>
+    {% endif %}
+  </div>
+
+  <div class="row g-4">
+    <section class="col-12">
+      <div class="profile-card">
+        <div class="card-body">
+          {% if profile.user.profile_picture %}
+          <img class="rounded object-fit-cover mb-3" src="{{ profile.user.profile_picture }}" alt="{{ profile.user.username }}" width="120" height="120">
+          {% else %}
+          <div class="rounded bg-light d-flex align-items-center justify-content-center text-muted mb-3" style="width: 120px; height: 120px;" aria-hidden="true">
+            <span class="material-symbols-outlined" style="font-size: 3rem;">person</span>
+          </div>
+          {% endif %}
+
+          <h1 class="profile-name h3">{% if profile.user.first_name or profile.user.last_name %}{{ profile.user.first_name }} {{ profile.user.last_name }}{% else %}{{ profile.user.username }}{% endif %}</h1>
+          <p class="profile-username mb-3">@{{ profile.user.username }}</p>
+          {% if user and user.id != profile.user.id and connection_state in ['available', 'rejected'] %}
+          <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+            {% if connection_state == 'rejected' %}<span class="badge text-bg-light">Previous request rejected</span>{% endif %}
+            <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#profileConnectModal">Connect</button>
+          </div>
+          {% endif %}
+          {% if user and user.id != profile.user.id and connection_state == 'connected' %}
+          <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+            <span class="connection-status"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Connected</span>
+            <button class="btn btn-outline-danger btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#disconnectConnectionModal">Disconnect</button>
+          </div>
+          {% endif %}
+
+          <div class="profile-meta">
+            <div class="meta-item"><span class="material-symbols-outlined">mail</span><a href="mailto:{{ profile.user.email }}">{{ profile.user.email }}</a></div>
+            {% if profile.user.telephone %}
+            <div class="meta-item"><span class="material-symbols-outlined">call</span><a href="tel:{{ profile.user.telephone }}">{{ profile.user.telephone }}</a></div>
+            {% else %}
+            <div class="meta-item"><span class="material-symbols-outlined">call</span><span class="text-muted">No telephone</span></div>
+            {% endif %}
+            {% if profile.user.role == 'alumni' %}
+              {% if profile.details and profile.details.graduation_year %}
+              <div class="meta-item"><span class="material-symbols-outlined">school</span><span>{{ profile.details.graduation_year }}</span></div>
+              {% else %}
+              <div class="meta-item"><span class="material-symbols-outlined">school</span><span class="text-muted">No graduation year</span></div>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+      <section>
+        <div class="profile-card">
+          <div class="card-body">
+            <h2 class="h5 mb-3">Account</h2>
+            <div class="profile-meta">
+              <div class="meta-item"><span class="material-symbols-outlined">person</span><span>{{ profile.user.role|title }}</span></div>
+              <div class="meta-item"><span class="material-symbols-outlined">work</span><span>{% if profile.details and profile.details.job_title %}{{ profile.details.job_title }}{% else %}No job title{% endif %}</span></div>
+              {% if profile.user.role == 'alumni' %}
+              <div class="meta-item"><span class="material-symbols-outlined">school</span><span>{% if profile.details and profile.details.programme %}{{ profile.details.programme }}{% else %}No programme{% endif %}</span></div>
+              {% elif profile.user.role == 'faculty' %}
+              <div class="meta-item"><span class="material-symbols-outlined">domain</span><span>{% if profile.details and profile.details.department %}{{ profile.details.department }}{% else %}No department{% endif %}</span></div>
+              {% endif %}
+              <div class="meta-item"><span class="material-symbols-outlined">location_on</span><span>{% if profile.user.location %}{{ profile.user.location }}{% else %}No location{% endif %}</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="profile-card">
+          <div class="card-body">
+            <h2 class="h5 mb-3">Skills & Interests</h2>
+            <div class="mb-3">
+              <h3 class="section-label">Skills</h3>
+              {% if profile.skills %}
+              <ul class="profile-list">{% for skill in profile.skills %}<li>{{ skill.skill_name }}</li>{% endfor %}</ul>
+              {% else %}
+              <p class="mb-0 text-muted">No skills added.</p>
+              {% endif %}
+            </div>
+            <div>
+              <h3 class="section-label">Interests</h3>
+              {% if profile.interests %}
+              <ul class="profile-list">{% for interest in profile.interests %}<li>{{ interest.interest_name }}</li>{% endfor %}</ul>
+              {% else %}
+              <p class="mb-0 text-muted">No interests added.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="col-12 col-lg-8">
+      <div class="profile-card">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Education & Awards</h2>
+          <div class="row g-4">
+            <div class="col-12 col-md-6">
+              <h3 class="section-label">Education</h3>
+              {% if profile.education %}
+              {% for education in profile.education %}
+              <article class="mb-3">
+                <h4 class="h6 mb-1">{{ education.degree or 'Education' }}</h4>
+                <p class="mb-0">{{ education.institution_name }}{% if education.institution_location %}, {{ education.institution_location }}{% endif %}</p>
+                {% if education.year_of_completion %}
+                <p class="small text-muted mb-0">Completed {{ education.year_of_completion }}</p>
+                {% endif %}
+              </article>
+              {% endfor %}
+              {% else %}
+              <p class="mb-0 text-muted">No education added.</p>
+              {% endif %}
+            </div>
+            <div class="col-12 col-md-6">
+              <h3 class="section-label">Awards</h3>
+              {% if profile.awards %}
+              {% for award in profile.awards %}
+              <article class="mb-3">
+                <h4 class="h6 mb-1">{{ award.award_name }}</h4>
+                {% if award.award_description %}
+                <p class="text-muted mb-0">{{ award.award_description }}</p>
+                {% else %}
+                <p class="text-muted mb-0">No description provided.</p>
+                {% endif %}
+              </article>
+              {% endfor %}
+              {% else %}
+              <p class="mb-0 text-muted">No awards added.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+{% if user and user.id != profile.user.id and connection_state in ['available', 'rejected'] %}
+<div class="modal fade" id="profileConnectModal" tabindex="-1" aria-labelledby="profileConnectModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('connection_request_action') }}">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="profileConnectModalTitle">Send connection request</h2>
+          <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">Send a connection request to <strong>{{ profile.user.username }}</strong>?</p>
+          <input type="hidden" name="recipient_id" value="{{ profile.user.id }}">
+          <input type="hidden" name="return_to" value="/profiles/{{ profile.user.id }}">
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Connect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if user and user.id != profile.user.id and connection_state == 'connected' %}
+<div class="modal fade" id="disconnectConnectionModal" tabindex="-1" aria-labelledby="disconnectConnectionModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('disconnect_connection_action', other_user_id=profile.user.id) }}">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="disconnectConnectionModalTitle">End connection?</h2>
+          <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">Remove <strong>{{ profile.user.username }}</strong> from your connections?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep connection</button>
+          <button class="btn btn-danger" type="submit">Disconnect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

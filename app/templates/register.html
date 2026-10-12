@@ -5,17 +5,34 @@
 <div class="auth-shell">
   <div class="auth-panel">
     <a class="auth-back" href="{{ url_for('index_view') }}">← Home</a>
-    <div class="brand-wordmark">FastStarter</div>
-    <p class="auth-tagline">Create an account</p>
+    <div class="brand-wordmark">Nexa</div>
+    <p class="auth-tagline">Create your account</p>
 
     <form method="POST" action="{{ url_for('register_view') }}">
-      <div class="mb-3">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="first_name">First name</label>
+          <input class="form-control" type="text" id="first_name" name="first_name" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="last_name">Last name</label>
+          <input class="form-control" type="text" id="last_name" name="last_name" required>
+        </div>
+      </div>
+      <div class="mb-3 mt-3">
         <label class="form-label" for="username">Username</label>
         <input class="form-control" type="text" id="username" name="username" required autofocus>
       </div>
       <div class="mb-3">
         <label class="form-label" for="email">Email</label>
         <input class="form-control" type="email" id="email" name="email" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="role">Role</label>
+        <select class="form-select" id="role" name="role" required>
+          <option value="alumni" selected>Alumni</option>
+          <option value="faculty">Faculty</option>
+        </select>
       </div>
       <div class="mb-3">
         <label class="form-label" for="password">Password</label>

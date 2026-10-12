@@ -1,0 +1,96 @@
+{% extends "authenticated-base.html" %}
+{% block title %}My Network{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-3">
+  <div class="mb-4">
+    <p class="text-uppercase small text-muted mb-1">Nexa community</p>
+    <h1 class="h3 mb-1">My Network</h1>
+    <p class="text-muted mb-0">Your connections and connection requests.</p>
+  </div>
+
+  <nav class="nav nav-tabs mb-4" aria-label="Network views">
+    <a class="nav-link" href="{{ url_for('network_view') }}">Global Network</a>
+    <a class="nav-link active" href="{{ url_for('my_network_view') }}" aria-current="page">My Network</a>
+  </nav>
+
+  <section class="mb-5" aria-labelledby="incoming-requests-title">
+    <h2 class="h5 mb-3" id="incoming-requests-title">Incoming requests{% if incoming_requests %} <span class="text-muted">({{ incoming_requests|length }})</span>{% endif %}</h2>
+    {% if incoming_requests %}
+    <div class="row g-3">
+      {% for entry in incoming_requests %}
+      {% set member = entry.profile.user %}
+      <div class="col-12 col-lg-6 col-xxl-4">
+        <article class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-uppercase small text-muted mb-1">{{ member.role }}</p>
+            <h3 class="h5 mb-1">{{ member.username }}</h3>
+            <p class="text-muted">{{ member.location or 'Nexa member' }}</p>
+            <div class="d-flex flex-wrap gap-2">
+              <a class="btn btn-outline-primary btn-sm" href="{{ url_for('profile_view', user_id=member.id) }}">View profile</a>
+              <form method="post" action="{{ url_for('connection_request_response', request_id=entry.request.id) }}">
+                <input type="hidden" name="decision" value="accepted">
+                <button class="btn btn-primary btn-sm" type="submit">Accept</button>
+              </form>
+              <form method="post" action="{{ url_for('connection_request_response', request_id=entry.request.id) }}">
+                <input type="hidden" name="decision" value="rejected">
+                <button class="btn btn-outline-secondary btn-sm" type="submit">Reject</button>
+              </form>
+            </div>
+          </div>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">You have no incoming requests.</p>
+    {% endif %}
+  </section>
+
+  <section class="mb-5" aria-labelledby="connections-title">
+    <h2 class="h5 mb-3" id="connections-title">Connections{% if connections %} <span class="text-muted">({{ connections|length }})</span>{% endif %}</h2>
+    {% if connections %}
+    <div class="row g-3">
+      {% for entry in connections %}
+      {% set member = entry.profile.user %}
+      <div class="col-12 col-lg-6 col-xxl-4">
+        <article class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-uppercase small text-muted mb-1">{{ member.role }}</p>
+            <h3 class="h5 mb-1">{{ member.username }}</h3>
+            <p class="text-muted">{{ member.location or 'Nexa member' }}</p>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('profile_view', user_id=member.id) }}">View profile</a>
+          </div>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">You have no connections yet. Explore the <a href="{{ url_for('network_view') }}">Global Network</a>.</p>
+    {% endif %}
+  </section>
+
+  <section aria-labelledby="outgoing-requests-title">
+    <h2 class="h5 mb-3" id="outgoing-requests-title">Sent requests{% if outgoing_requests %} <span class="text-muted">({{ outgoing_requests|length }})</span>{% endif %}</h2>
+    {% if outgoing_requests %}
+    <div class="row g-3">
+      {% for entry in outgoing_requests %}
+      {% set member = entry.profile.user %}
+      <div class="col-12 col-lg-6 col-xxl-4">
+        <article class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-uppercase small text-muted mb-1">{{ member.role }}</p>
+            <h3 class="h5 mb-1">{{ member.username }}</h3>
+            <p class="text-muted">Request sent {{ entry.request.sent_date }}</p>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('profile_view', user_id=member.id) }}">View profile</a>
+          </div>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">You have no sent requests awaiting a response.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

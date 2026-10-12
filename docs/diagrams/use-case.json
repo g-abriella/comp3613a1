@@ -1,0 +1,22 @@
+{
+  "system": "Alumni App",
+  "actors": [
+    {"name": "Alumni", "side": "left"},
+    {"name": "Faculty", "side": "right"}
+  ],
+  "use_cases": [
+    {
+      "name": "View Profile",
+      "actors": ["Alumni", "Faculty"]
+    },
+    {
+      "name": "Send Connection Request",
+      "actors": ["Alumni"],
+      "extends": ["View Profile"]
+    },
+    {
+      "name": "Event Creation and Management",
+      "actors": ["Faculty"]
+    }
+  ]
+}

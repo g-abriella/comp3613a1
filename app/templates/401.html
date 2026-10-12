@@ -5,11 +5,20 @@
 {% block internal_css %}
 <style>
     body {
-        background-color: #f8f9fa;
+        background-color: var(--brand-bg, #f2f2f2);
     }
 
     .page-container {
+        width: 60%;
+        max-width: none;
         min-height: 100vh;
+    }
+
+    @media (max-width: 1199.98px) {
+        .page-container { width: 80%; }
+    }
+    @media (max-width: 767.98px) {
+        .page-container { width: calc(100% - 1.5rem); }
     }
 
     .card-custom {
@@ -19,7 +28,8 @@
     }
 
     .left-section {
-        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+        background: var(--brand-accent-2, #102f4a);
+        border-bottom: 0.35rem solid var(--brand-accent, #D1AD6B);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -38,6 +48,9 @@
 
     .btn-primary {
         border-radius: 0.5rem;
+        color: var(--brand-accent-2, #102f4a);
+        background: var(--brand-accent, #D1AD6B);
+        border-color: var(--brand-accent, #D1AD6B);
     }
 </style>
 {% endblock %}

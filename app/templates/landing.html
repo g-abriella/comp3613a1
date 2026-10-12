@@ -1,13 +1,10 @@
 {% extends "base.html" %}
-{% block title %}FastStarter{% endblock %}
+{% block title %}Nexa{% endblock %}
 
 {% block content %}
 <div class="landing">
-  <div class="landing-orb" aria-hidden="true"></div>
-  <div class="landing-orb landing-orb-2" aria-hidden="true"></div>
-
   <header class="landing-nav">
-    <a class="brand-wordmark" href="{{ url_for('index_view') }}">FastStarter</a>
+    <a class="brand-wordmark" href="{{ url_for('index_view') }}">Nexa</a>
     <div class="landing-nav-actions">
       {% if user_logged_in %}
       <a class="btn-landing btn-landing-ghost" href="{{ app_home }}">Open app</a>
@@ -20,11 +17,10 @@
   </header>
 
   <main class="landing-hero">
-    <p class="landing-kicker">Coursework starter</p>
-    <h1 class="brand-wordmark">FastStarter</h1>
+    <p class="landing-kicker">Alumni network</p>
+    <h1 class="brand-wordmark">Nexa</h1>
     <p class="landing-lead">
-      A placeholder landing page for your COMP 3613 app.
-      Phase 5 theming replaces these colors, type, and copy with your brand.
+      Connect with alumni, discover opportunities, and keep the community engaged through meaningful relationships.
     </p>
     <div class="landing-cta">
       {% if user_logged_in %}

@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from sqlalchemy.exc import DBAPIError, OperationalError, ProgrammingError
 from sqlmodel import SQLModel, Session, create_engine
 
-from app.config import get_settings
+from app.config import get_settings, normalize_database_uri
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +22,9 @@ def sqlalchemy_uri(uri: str) -> str:
     return uri
 
 
+db_uri = normalize_database_uri(get_settings().database_uri)
 engine = create_engine(
-    sqlalchemy_uri(get_settings().database_uri),
+    sqlalchemy_uri(db_uri),
     echo=get_settings().env.lower()
     in ["dev", "development", "test", "testing", "staging"],
     pool_size=get_settings().db_pool_size,

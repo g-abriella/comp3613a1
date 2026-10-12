@@ -1,0 +1,29 @@
+@startuml
+!pragma layout smetana
+skinparam shadowing false
+skinparam actorBorderColor #1B365D
+skinparam actorFontColor #1E232D
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #1B365D
+skinparam usecaseFontColor #1E232D
+skinparam rectangleBorderColor #1B365D
+skinparam rectangleBackgroundColor #F8FAFC
+skinparam arrowColor #1B365D
+
+actor "Alumni" as Alumni
+
+rectangle "Alumni App" {
+  usecase "View Profile" as View_Profile
+  usecase "Send Connection Request" as Send_Connection_Request
+  usecase "Event Creation and Management" as Event_Creation_and_Management
+}
+
+actor "Faculty" as Faculty
+
+Alumni --> View_Profile
+View_Profile <-- Faculty
+Alumni --> Send_Connection_Request
+Send_Connection_Request ..> View_Profile : <<extend>>
+Event_Creation_and_Management <-- Faculty
+
+@enduml

@@ -53,3 +53,23 @@ async def is_admin_dep(user: AuthDep):
     return user
 
 AdminDep = Annotated[User, Depends(is_admin_dep)]
+
+
+def can_create_events(user: User) -> bool:
+    return user.role in {"faculty", "admin"}
+
+
+async def is_faculty(user: User):
+    return can_create_events(user)
+
+
+async def is_faculty_dep(user: AuthDep):
+    if not await is_faculty(user):
+        raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Faculty access is required to create events",
+            )
+    return user
+
+
+FacultyDep = Annotated[User, Depends(is_faculty_dep)]

@@ -6,46 +6,169 @@ Do not put your student ID in this file if you will commit it. The PDF cover add
 
 ## Assigned project
 
-## Three workflows
+Alumni App
 
-### 1.
+## Workflows
 
-### 2.
+### 1. View Profile (Alumni, Faculty)
 
-### 3.
+### 2. Event Creation and Management (Faculty)
+
+### 3. Send Connection Request (Alumni)
+
+### 4. Edit Profile (Alumni, Faculty)
 
 ## Use case diagram
 
 ![Use case diagram](diagrams/use-case.png)
 
+Notes:
+- `View Profile` is a shared capability used across actors.
+- `Send Connection Request` is a separate workflow and can optionally extend `View Profile` when the user inspects a profile before sending a request.
+- `Event Creation and Management` is a separate faculty workflow and does not need to be tied to the alumni networking flow.
+
 ## Model diagram
 
-First draft. Update this section in Phase 5 when polish revises the model, and note what changed.
+First draft from the student-named entities, properties, and confirmed relationships. Update this section in Phase 5 when polish revises the model, and note what changed.
 
 ```mermaid
 erDiagram
-  ENTITY ||--o{ OTHER : relates
+  USER {
+    int userID PK
+    string firstName
+    string lastName
+    string username
+    string email
+    string password
+    string role
+    string telephone
+    string location
+    string profilePicture
+  }
+  ALUMNI {
+    int userID PK, FK
+    int graduationYear
+    string programme
+    string jobTitle
+  }
+  FACULTY {
+    int userID PK, FK
+    string department
+    string jobTitle
+  }
+  EDUCATION {
+    int educationID PK
+    int userID FK
+    string institutionName
+    string institutionLocation
+    string degree
+    int yearOfCompletion
+  }
+  SKILL {
+    int skillID PK
+    int userID FK
+    string skillName
+  }
+  INTEREST {
+    int interestID PK
+    int userID FK
+    string interestName
+  }
+  AWARD {
+    int awardID PK
+    int userID FK
+    string awardName
+    string awardDescription
+  }
+  EVENT {
+    int eventID PK
+    string title
+    string description
+    string eventType
+    string status
+    boolean isDraft
+    datetime startDatetime
+    datetime endDatetime
+    string location
+    string venueType
+    string meetingLink
+    int capacity
+    int facultyUserID FK
+  }
+  NETWORKING_REQUEST {
+    int requestID PK
+    date sentDate
+    string status
+    int senderID FK
+    int recipientID FK
+  }
+  USER ||--o| ALUMNI : "specializes as"
+  USER ||--o| FACULTY : "specializes as"
+  USER ||--o{ EDUCATION : has
+  USER ||--o{ SKILL : has
+  USER ||--o{ INTEREST : has
+  USER ||--o{ AWARD : has
+  USER ||--o{ EVENT : creates
+  USER ||--o{ NETWORKING_REQUEST : sends
+  USER ||--o{ NETWORKING_REQUEST : receives
 ```
+
+Notes:
+- `User` holds the shared account and contact fields. `Alumni` and `Faculty` specialize it through a shared primary key/foreign key. Both roles use the profile detail tables; only Alumni has graduation year and programme.
+- A User can have multiple Education, Skill, Interest, and Award records. A Faculty User can create multiple Events; each Event has one owning User.
+- Each Networking Request has one sender and one recipient, both of whom are Users. Users can send and receive multiple requests.
+- Networking Request status values: `pending`, `accepted`, `rejected`. Accepting updates the existing request into a connection. A repeated request in either direction is not allowed. Incoming requests appear in My Network for acceptance or rejection; accepted requests appear as connections.
+- Event fields now include type, draft state, start/end datetimes, venue type, meeting link, and capacity. Runtime status is derived from the schedule; `tentative` and `cancelled` remain explicit event states.
 
 ## Wireframes
 
-Embed each student-crafted wireframe here (Phase 4). Paths are relative to this file:
+### 1. View Profile
 
-```markdown
-### Explore / Search Publications
+![View Profile](wireframes/w1.png)
 
-![Explore / Search Publications](wireframes/explore.png)
-```
+### 2. Event Creation and Management
 
-`python manage.py report` also embeds any PNG/JPG still missing from `docs/wireframes/`.
+![Event Creation and Management](wireframes/w2.png)
+
+### 3. Send Connection Request
+
+![Send Connection Request](wireframes/w3.png)
+
+### 4. Edit Profile
+
+![Edit Profile](wireframes/w4.png)
+
+Coverage notes:
+- `View Profile` shows a profile detail layout with a `Connect` action and the profile metadata cards.
+- `Event Creation and Management` shows the full faculty event form, including title, type, status, description, scheduling, venue, and save/cancel actions.
+- `Send Connection Request` shows both entry points: from the network search page and from the profile page, with a confirmation modal before sending the request.
+- `Edit Profile` covers shared identity/contact fields, profile picture, Alumni graduation year, job title, skills, interests, education entries, awards, and Save/Cancel. The affiliated programme remains an Alumni model field and will be included in the form.
+- The wireframes cover all four named workflows. The confirmed post-save destination for the faculty event workflow is: after `Save`, the user returns to the event list view.
 
 ## Theming
 
 Branding preferences and how they were applied (landing / login / register).
 
+- Platform name: Nexa
+- Color palette:
+  - Primary: `#102F4A`
+  - Accent: `#D1AD6B`
+  - Main background: `#F7F5F0`
+  - Content surfaces: `#FFFFFF`
+  - Body text: `#344054`
+  - Borders: `#D9E4EC`
+- Font family: Geist Sans
+- Applied direction: clean, trust-focused alumni network branding with a premium academic feel, using deep navy for primary actions, warm gold acccent highlights, and quiet neutral surfaces for readable cards and forms.
+
 ## Implementation notes
 
 One named workflow at a time. Include verify notes and polish / model revisions (Phase 5). Do not treat the first build as final.
+
+- **View Profile:** Added an authenticated Network directory with username search and links to profile detail pages. Profile pages show shared contact information, Alumni graduation year/programme, job title/department, and available education, skills, interests, and awards. Verified by the student in the running app; the existing role/event regression tests passed (4 tests).
+- **Send Connection Request:** The Network area is divided into Global Network for discovering members and My Network for accepted connections plus incoming and outgoing requests. Connect uses a confirmation modal from both the directory and profile. Duplicate requests in either direction are blocked. The student verified sending and handling requests in the running app; the full test suite passed (6 tests).
+- **Edit Profile:** Student wireframe added at `docs/wireframes/w4.png`. Profile edits exclude password and role; registration and profile editing include first and last name. The student confirmed the completed workflow was verified locally.
+- **Event Creation and Management:** Implemented faculty event creation and editing, including draft handling, scheduling, venue, and capacity. The student confirmed the completed workflow was verified locally.
+- **Phase 5 completion:** The student confirmed that all four named workflows are completed and verified locally.
 
 ## Deployed app
 

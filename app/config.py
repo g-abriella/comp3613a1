@@ -6,12 +6,37 @@ from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
 # Prefer a real .env; fall back to committed examples for first-run clones.
 _DOTENV_CANDIDATES = (".env", ".env.example", "env.example")
 
 
+def normalize_database_uri(uri: str) -> str:
+    """Resolve relative SQLite paths against the project root so reloads reuse the same database."""
+    value = uri.strip()
+    if not value.startswith("sqlite://") or value.startswith("sqlite:///") and value.count("sqlite:///") > 1:
+        return value
+    if value.startswith("sqlite:///"):
+        relative = value[len("sqlite:///") :]
+        if relative and relative != ":memory:" and not Path(relative).is_absolute():
+            resolved = (PROJECT_ROOT / relative).resolve()
+            return f"sqlite:///{resolved.as_posix()}"
+    return value
+
+
+def ensure_local_env_file() -> None:
+    """Create a real .env from the sample once so the app keeps a stable secret and DB config."""
+    example = PROJECT_ROOT / ".env.example"
+    target = PROJECT_ROOT / ".env"
+    if target.exists() or not example.exists():
+        return
+    target.write_text(example.read_text(encoding="utf-8"), encoding="utf-8")
+
+
 def resolve_dotenv_path() -> Path | None:
     """Return the first existing dotenv file, or None."""
+    ensure_local_env_file()
     for name in _DOTENV_CANDIDATES:
         path = Path(name)
         if path.is_file():

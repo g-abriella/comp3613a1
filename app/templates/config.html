@@ -4,18 +4,24 @@
 {% block internal_css %}
 <style>
     body {
-        background: #0f1419;
-        color: #e7ecf3;
+        background: var(--brand-bg, #f2f2f2);
+        color: var(--brand-ink, #344054);
         min-height: 100vh;
     }
     .cfg-wrap {
-        max-width: 960px;
+        width: 60%;
         margin: 0 auto;
         padding: 2rem 1rem 3rem;
     }
+    @media (max-width: 1199.98px) {
+        .cfg-wrap { width: 80%; }
+    }
+    @media (max-width: 767.98px) {
+        .cfg-wrap { width: calc(100% - 1.5rem); }
+    }
     .cfg-card {
-        background: #1a222d;
-        border: 1px solid #2a3544;
+        background: var(--brand-surface, #fff);
+        border: 1px solid #d9e4ec;
         border-radius: 0.75rem;
         padding: 1.25rem 1.5rem;
         margin-bottom: 1rem;
@@ -23,30 +29,35 @@
     .cfg-card h2 {
         font-size: 1.1rem;
         margin-bottom: 1rem;
-        color: #9db0c7;
+        color: var(--brand-accent-2, #102f4a);
         text-transform: uppercase;
         letter-spacing: 0.04em;
     }
-    .cfg-muted { color: #8b9bb0; }
+    .cfg-muted { color: var(--brand-muted, #667085); }
     .badge-ok { background: #198754; }
     .badge-bad { background: #dc3545; }
     table.cfg td, table.cfg th {
-        border-color: #2a3544;
+        border-color: #d9e4ec;
         vertical-align: top;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 0.85rem;
     }
     .btn-row form { display: inline-block; margin: 0.25rem 0.35rem 0.25rem 0; }
     .form-control, .form-select {
-        background: #0f1419;
-        border-color: #2a3544;
-        color: #e7ecf3;
+        background: var(--brand-surface, #fff);
+        border-color: #d9e4ec;
+        color: var(--brand-ink, #344054);
     }
     .form-control:focus, .form-select:focus {
-        background: #0f1419;
-        border-color: #4d6b8a;
-        color: #e7ecf3;
-        box-shadow: none;
+        background: var(--brand-surface, #fff);
+        border-color: var(--brand-accent, #D1AD6B);
+        color: var(--brand-ink, #344054);
+        box-shadow: 0 0 0 0.2rem rgba(209, 173, 107, 0.2);
+    }
+    .cfg-wrap .btn-primary {
+        color: var(--brand-accent-2, #102f4a);
+        background: var(--brand-accent, #D1AD6B);
+        border-color: var(--brand-accent, #D1AD6B);
     }
     .alert { border: none; }
 </style>
