@@ -47,55 +47,32 @@ def cmd_init(args: argparse.Namespace) -> None:
 
 
 def cmd_seed(args: argparse.Namespace) -> None:
-    """Insert demo users.
+    """Insert demo users, profiles, events, and connection requests (idempotent).
 
-    bob / bobpass       (alumni)
-    admin / adminpass   (faculty)
+    bob / bobpass        (alumni)
+    admin / adminpass    (faculty)
+    alice, marcus, priya (alumni)  — password alumnipass
+    drstewart            (faculty) — password facultypass
     """
     from app.database import ensure_db_and_tables, get_cli_session
-    from app.repositories.user import UserRepository
-    from app.schemas.user import FacultyCreate, AlumniCreate
-    from app.utilities.security import encrypt_password
+    from app.services.seed_service import SeedService
 
     _ensure_models_loaded()
     ensure_db_and_tables()
 
-    demo_users = [
-        ("bob", "bob@example.com", "bobpass", "alumni"),
-        ("admin", "admin@example.com", "adminpass", "faculty"),
-    ]
-
-    created = 0
-    skipped = 0
     with get_cli_session() as session:
-        repo = UserRepository(session)
-        for username, email, password, role in demo_users:
-            existing_user = repo.get_by_username(username)
+        summary = SeedService(session).seed()
 
-            if existing_user:
-                if username == "admin" and existing_user.role != "faculty":
-                    existing_user.role = "faculty"
-                    session.add(existing_user)
-                    session.commit()
-                    print("  update admin (faculty)")
-                else:
-                    print(f"  skip  {username} (already exists)")
-                    skipped += 1
-                continue
-            payload_cls = FacultyCreate if role == "faculty" else AlumniCreate
-            repo.create(
-                payload_cls(
-                    username=username,
-                    email=email,
-                    password=encrypt_password(password),
-                    role=role,
-                )
-            )
-            print(f"  create {username} ({role})")
-            created += 1
+    for action in summary["actions"]:
+        print(f"  {action}")
 
-    print(f"Seed done — created {created}, skipped {skipped}.")
-    print("Login with bob/bobpass or admin/adminpass")
+    print(
+        f"Seed done — users created {summary['users_created']} / existing "
+        f"{summary['users_existing']}, events created {summary['events_created']}, "
+        f"connection requests created {summary['connections_created']}."
+    )
+    print("Login with bob/bobpass (alumni) or admin/adminpass (faculty).")
+    print("Sample accounts: alice, marcus, priya (alumnipass) and drstewart (facultypass).")
 
 
 def cmd_run(args: argparse.Namespace) -> None:

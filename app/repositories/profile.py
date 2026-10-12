@@ -39,3 +39,82 @@ class ProfileRepository:
     def _items(self, model, user_id: int):
         statement = select(model).where(model.user_id == user_id)
         return self.db.exec(statement).all()
+
+    def ensure_role_details(
+        self,
+        user_id: int,
+        role: str,
+        *,
+        job_title: str | None = None,
+        graduation_year: int | None = None,
+        programme: str | None = None,
+        department: str | None = None,
+    ):
+        """Create or fill a role-specific profile row without overwriting existing values."""
+        model = Alumni if role == "alumni" else Faculty
+        details = self.db.get(model, user_id)
+        if details is None:
+            details = model(id=user_id)
+        if job_title and not details.job_title:
+            details.job_title = job_title
+        if role == "alumni":
+            if graduation_year and not details.graduation_year:
+                details.graduation_year = graduation_year
+            if programme and not details.programme:
+                details.programme = programme
+        elif department and not details.department:
+            details.department = department
+        self.db.add(details)
+        self.db.commit()
+        self.db.refresh(details)
+        return details
+
+    def has_detail_items(self, model, user_id: int) -> bool:
+        return self.db.exec(select(model).where(model.user_id == user_id)).first() is not None
+
+    def add_detail_items(self, model, user_id: int, field_name: str, values) -> int:
+        created = 0
+        for value in values or []:
+            text = str(value).strip()
+            if not text:
+                continue
+            self.db.add(model(user_id=user_id, **{field_name: text}))
+            created += 1
+        if created:
+            self.db.commit()
+        return created
+
+    def add_education_entries(self, user_id: int, entries) -> int:
+        created = 0
+        for entry in entries or []:
+            institution_name = str(entry.get("institution_name", "")).strip()
+            degree = str(entry.get("degree", "")).strip()
+            if not institution_name and not degree:
+                continue
+            self.db.add(Education(
+                user_id=user_id,
+                institution_name=institution_name,
+                institution_location=str(entry.get("institution_location", "")).strip(),
+                degree=degree,
+                year_of_completion=int(entry.get("year_of_completion") or 0),
+            ))
+            created += 1
+        if created:
+            self.db.commit()
+        return created
+
+    def add_award_entries(self, user_id: int, entries) -> int:
+        created = 0
+        for entry in entries or []:
+            award_name = str(entry.get("award_name", "")).strip()
+            if not award_name:
+                continue
+            self.db.add(Award(
+                user_id=user_id,
+                award_name=award_name,
+                award_description=str(entry.get("award_description", "")).strip(),
+            ))
+            created += 1
+        if created:
+            self.db.commit()
+        return created

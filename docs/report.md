@@ -169,6 +169,7 @@ One named workflow at a time. Include verify notes and polish / model revisions 
 - **Edit Profile:** Student wireframe added at `docs/wireframes/w4.png`. Profile edits exclude password and role; registration and profile editing include first and last name. The student confirmed the completed workflow was verified locally.
 - **Event Creation and Management:** Implemented faculty event creation and editing, including draft handling, scheduling, venue, and capacity. The student confirmed the completed workflow was verified locally.
 - **Phase 5 completion:** The student confirmed that all four named workflows are completed and verified locally.
+- **Demo data (seed polish):** Seed now keeps `bob` as Alumni and updates the existing `admin` record to Faculty (no duplicate account), adds three fictional Alumni (`alice`, `marcus`, `priya`) and one fictional Faculty (`drstewart`) with education, skills, interests, and awards, three sample events of different types (Social, Mentorship, Reunion) owned by the Faculty account, and two connection requests (one accepted, one pending from `alice` to `bob`). Seeding is idempotent and reuses the existing repositories; running `python manage.py init` again creates no duplicates.
 
 ## Deployed app
 
@@ -178,10 +179,16 @@ https://
 
 ## Logins
 
-Every account a marker needs, including extra users you added. Starter accounts:
+Every account a marker needs, including extra users you added. Seeded via
+`app/services/seed_service.py` (idempotent: re-running init/seed never
+duplicates users, events, or connection requests).
 
-- bob / bobpass — regular user
-- admin / adminpass — admin
+- bob / bobpass — alumni (Alumni)
+- admin / adminpass — faculty (Faculty; can create and manage events)
+- alice / alumnipass — alumni (sample)
+- marcus / alumnipass — alumni (sample)
+- priya / alumnipass — alumni (sample)
+- drstewart / facultypass — faculty (sample)
 
 ## YouTube URL
 
