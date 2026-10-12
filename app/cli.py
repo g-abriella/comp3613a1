@@ -50,11 +50,11 @@ def cmd_seed(args: argparse.Namespace) -> None:
     """Insert demo users.
 
     bob / bobpass       (alumni)
-    admin / adminpass   (admin)
+    admin / adminpass   (faculty)
     """
     from app.database import ensure_db_and_tables, get_cli_session
     from app.repositories.user import UserRepository
-    from app.schemas.user import AdminCreate, AlumniCreate
+    from app.schemas.user import FacultyCreate, AlumniCreate
     from app.utilities.security import encrypt_password
 
     _ensure_models_loaded()
@@ -62,7 +62,7 @@ def cmd_seed(args: argparse.Namespace) -> None:
 
     demo_users = [
         ("bob", "bob@example.com", "bobpass", "alumni"),
-        ("admin", "admin@example.com", "adminpass", "admin"),
+        ("admin", "admin@example.com", "adminpass", "faculty"),
     ]
 
     created = 0
@@ -70,11 +70,19 @@ def cmd_seed(args: argparse.Namespace) -> None:
     with get_cli_session() as session:
         repo = UserRepository(session)
         for username, email, password, role in demo_users:
-            if repo.get_by_username(username):
-                print(f"  skip  {username} (already exists)")
-                skipped += 1
+            existing_user = repo.get_by_username(username)
+
+            if existing_user:
+                if username == "admin" and existing_user.role != "faculty":
+                    existing_user.role = "faculty"
+                    session.add(existing_user)
+                    session.commit()
+                    print("  update admin (faculty)")
+                else:
+                    print(f"  skip  {username} (already exists)")
+                    skipped += 1
                 continue
-            payload_cls = AdminCreate if role == "admin" else AlumniCreate
+            payload_cls = FacultyCreate if role == "faculty" else AlumniCreate
             repo.create(
                 payload_cls(
                     username=username,

@@ -5,7 +5,7 @@ from sqlmodel import SQLModel
 
 from app.models.user import UserBase
 
-UserRole = Literal["alumni", "faculty", "admin"]
+UserRole = Literal["alumni", "faculty"]
 
 
 class UserUpdate(SQLModel):
