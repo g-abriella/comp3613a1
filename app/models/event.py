@@ -1,5 +1,4 @@
-from datetime import date, datetime
-
+from datetime import date as Date, datetime
 from sqlmodel import Field, SQLModel
 
 
@@ -11,7 +10,7 @@ class EventBase(SQLModel):
     is_draft: bool = Field(default=False)
     start_datetime: datetime | None = None
     end_datetime: datetime | None = None
-    date: date | None = None
+    date: Date | None = None
     time: str | None = None
     location: str = Field(default="")
     venue_type: str = Field(default="in-person")
