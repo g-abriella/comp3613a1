@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.database import drop_all, ensure_db_and_tables, engine
 from app.dependencies.auth import can_create_events
 from app.models.user import User
+from app.models.event import Event
 from app.repositories.user import UserRepository
 from app.schemas.user import FacultyCreate
 from app.config import normalize_database_uri
@@ -425,5 +426,53 @@ def test_event_status_choices_are_preserved_and_events_can_be_deleted():
 
         assert service.delete_event(tentative.id, owner.id) is True
         assert service.get_event_by_id(tentative.id) is None
+
+    drop_all()
+
+
+def test_event_form_status_field_sets_stored_status():
+    drop_all()
+    ensure_db_and_tables()
+
+    with Session(engine) as db:
+        user = UserRepository(db).create(FacultyCreate(
+            username="formstatusfaculty",
+            email="formstatusfaculty@example.com",
+            password="secret",
+            role="faculty",
+        ))
+        token = create_access_token({"sub": str(user.id), "role": user.role})
+
+        with TestClient(app) as client:
+            for chosen in ["cancelled", "tentative", "upcoming"]:
+                response = client.post(
+                    "/events",
+                    data={
+                        "title": f"{chosen} event",
+                        "description": "Description",
+                        "event_type": "Social",
+                        "status": chosen,
+                        "start_datetime": "2026-12-01T10:00",
+                        "end_datetime": "2026-12-01T11:00",
+                        "venue_type": "in-person",
+                        "location": "Main Hall",
+                        "meeting_link": "",
+                        "capacity": "",
+                        "save_as_draft": "false",
+                    },
+                    cookies={"access_token": token},
+                    follow_redirects=False,
+                )
+                assert response.status_code == 303
+
+        stored = {
+            event.title: event.status
+            for event in db.exec(select(Event)).all()
+        }
+        assert stored == {
+            "cancelled event": "cancelled",
+            "tentative event": "tentative",
+            "upcoming event": "upcoming",
+        }
 
     drop_all()
